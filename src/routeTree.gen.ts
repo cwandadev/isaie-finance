@@ -16,6 +16,7 @@ import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authent
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
+import { Route as AuthenticatedCategoryIdRouteImport } from './routes/_authenticated/category.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,6 +53,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCategoryIdRoute = AuthenticatedCategoryIdRouteImport.update({
+  id: '/category/$id',
+  path: '/category/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
+  '/category/$id': typeof AuthenticatedCategoryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
+  '/category/$id': typeof AuthenticatedCategoryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
+  '/_authenticated/category/$id': typeof AuthenticatedCategoryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/transactions'
+    | '/category/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/transactions'
+    | '/category/$id'
   id:
     | '__root__'
     | '/'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/settings'
     | '/_authenticated/transactions'
+    | '/_authenticated/category/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -164,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/category/$id': {
+      id: '/_authenticated/category/$id'
+      path: '/category/$id'
+      fullPath: '/category/$id'
+      preLoaderRoute: typeof AuthenticatedCategoryIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -172,6 +191,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
+  AuthenticatedCategoryIdRoute: typeof AuthenticatedCategoryIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -179,6 +199,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
+  AuthenticatedCategoryIdRoute: AuthenticatedCategoryIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
