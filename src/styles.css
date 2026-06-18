@@ -4,20 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
- */
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -59,77 +45,83 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.875rem;
+  --background: oklch(0.985 0.008 250);
+  --foreground: oklch(0.18 0.03 260);
+  --card: oklch(1 0 0 / 0.7);
+  --card-foreground: oklch(0.18 0.03 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.18 0.03 260);
+  --primary: oklch(0.62 0.18 255);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.02 250);
+  --secondary-foreground: oklch(0.2 0.03 260);
+  --muted: oklch(0.95 0.015 250);
+  --muted-foreground: oklch(0.5 0.02 260);
+  --accent: oklch(0.93 0.05 25);
+  --accent-foreground: oklch(0.2 0.03 260);
+  --destructive: oklch(0.6 0.24 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.85 0.08 85 / 0.45);
+  --input: oklch(0.9 0.02 255);
+  --ring: oklch(0.82 0.14 85);
+  --gold: oklch(0.78 0.16 85);
+  --gold-soft: oklch(0.88 0.12 85);
+  --chart-1: oklch(0.62 0.18 255);
+  --chart-2: oklch(0.6 0.22 27);
+  --chart-3: oklch(0.78 0.16 70);
+  --chart-4: oklch(0.65 0.18 150);
+  --chart-5: oklch(0.6 0.2 305);
+  --sidebar: oklch(0.99 0.005 250);
+  --sidebar-foreground: oklch(0.18 0.03 260);
+  --sidebar-primary: oklch(0.62 0.18 255);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.95 0.02 250);
+  --sidebar-accent-foreground: oklch(0.2 0.03 260);
+  --sidebar-border: oklch(0.85 0.08 85 / 0.4);
+  --sidebar-ring: oklch(0.82 0.14 85);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: oklch(0.16 0.025 260);
+  --foreground: oklch(0.96 0.01 250);
+  --card: oklch(0.22 0.03 260 / 0.65);
+  --card-foreground: oklch(0.96 0.01 250);
+  --popover: oklch(0.22 0.03 260);
+  --popover-foreground: oklch(0.96 0.01 250);
+  --primary: oklch(0.72 0.18 255);
+  --primary-foreground: oklch(0.12 0.02 260);
+  --secondary: oklch(0.26 0.03 260);
+  --secondary-foreground: oklch(0.96 0.01 250);
+  --muted: oklch(0.24 0.03 260);
+  --muted-foreground: oklch(0.72 0.02 260);
+  --accent: oklch(0.3 0.05 25);
+  --accent-foreground: oklch(0.96 0.01 250);
+  --destructive: oklch(0.68 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.82 0.16 85 / 0.35);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.82 0.16 85);
+  --gold: oklch(0.82 0.16 85);
+  --gold-soft: oklch(0.72 0.12 85);
+  --chart-1: oklch(0.72 0.18 255);
+  --chart-2: oklch(0.7 0.22 27);
+  --chart-3: oklch(0.82 0.16 70);
+  --chart-4: oklch(0.72 0.2 150);
+  --chart-5: oklch(0.7 0.22 305);
+  --sidebar: oklch(0.19 0.03 260);
+  --sidebar-foreground: oklch(0.96 0.01 250);
+  --sidebar-primary: oklch(0.72 0.18 255);
+  --sidebar-primary-foreground: oklch(0.12 0.02 260);
+  --sidebar-accent: oklch(0.26 0.03 260);
+  --sidebar-accent-foreground: oklch(0.96 0.01 250);
+  --sidebar-border: oklch(0.82 0.16 85 / 0.3);
+  --sidebar-ring: oklch(0.82 0.16 85);
 }
 
 @layer base {
@@ -138,7 +130,117 @@
   }
 
   body {
-    background-color: var(--color-background);
     color: var(--color-foreground);
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(1200px 600px at 10% -10%, oklch(0.92 0.08 250 / 0.55), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, oklch(0.92 0.08 25 / 0.45), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, oklch(0.95 0.06 145 / 0.35), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
+  .dark body {
+    background-image:
+      radial-gradient(1200px 600px at 10% -10%, oklch(0.35 0.12 255 / 0.45), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, oklch(0.35 0.18 305 / 0.4), transparent 60%),
+      radial-gradient(800px 600px at 50% 110%, oklch(0.3 0.1 200 / 0.4), transparent 60%);
+  }
+}
+
+/* Subtle dotted grid overlay (Lovable vibe) */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, oklch(0.5 0.05 250 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.5 0.05 250 / 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Golden hairline card with metallic shimmer on hover */
+@utility gold-card {
+  position: relative;
+  background: color-mix(in oklab, var(--color-card) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.5) inset,
+    0 10px 30px -18px oklch(0.2 0.05 260 / 0.35);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  overflow: hidden;
+}
+.dark .gold-card {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 0.06) inset,
+    0 10px 30px -18px oklch(0 0 0 / 0.5);
+}
+@utility gold-card-hover {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg,
+      transparent 0%,
+      var(--color-gold) 25%,
+      oklch(1 0 0 / 0.9) 50%,
+      var(--color-gold) 75%,
+      transparent 100%);
+    background-size: 250% 250%;
+    background-position: 0% 0%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity .35s ease, background-position 1.2s ease;
+    pointer-events: none;
+  }
+  &:hover::before {
+    opacity: 1;
+    background-position: 100% 100%;
+  }
+  &:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-gold) 70%, transparent);
+  }
+}
+
+/* Golden divider line */
+@utility gold-line {
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    color-mix(in oklab, var(--color-gold) 80%, transparent),
+    transparent);
+}
+
+/* Shining metal button effect */
+@utility metal-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg,
+      transparent 30%,
+      oklch(1 0 0 / 0.5) 50%,
+      transparent 70%);
+    transform: translateX(-120%);
+    transition: transform .7s ease;
+    pointer-events: none;
+  }
+  &:hover::after { transform: translateX(120%); }
+}
+
+/* Gold text */
+@utility text-gold {
+  background: linear-gradient(135deg, var(--color-gold-soft), var(--color-gold), oklch(0.95 0.1 85));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
