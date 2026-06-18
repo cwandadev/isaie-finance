@@ -82,11 +82,11 @@ function AuthPage() {
             <form onSubmit={signIn} className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input type="password" required placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <Button type="submit" disabled={loading} className="w-full metal-btn">
                 {loading ? "Signing in..." : "Sign in"}
@@ -98,15 +98,15 @@ function AuthPage() {
             <form onSubmit={signUp} className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>Display name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Isaie" />
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (e.g. Isaie)" />
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input type="email" required placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Password</Label>
-                <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input type="password" required minLength={6} placeholder="At least 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <Button type="submit" disabled={loading} className="w-full metal-btn">
                 {loading ? "Creating..." : "Create account"}
