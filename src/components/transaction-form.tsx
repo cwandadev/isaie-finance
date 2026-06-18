@@ -84,7 +84,7 @@ export function TransactionForm({
             </div>
             <div className="space-y-2">
               <Label>Amount (Rwf)</Label>
-              <Input type="number" min={0} disabled={viewOnly} value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
+              <Input type="number" min={0} placeholder="e.g. 25000" disabled={viewOnly} value={form.amount || ""} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} />
             </div>
           </div>
           <div className="space-y-2">
@@ -114,7 +114,7 @@ export function TransactionForm({
           </div>
           <div className="space-y-2">
             <Label>Note (optional)</Label>
-            <Textarea disabled={viewOnly} value={form.note ?? ""} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} />
+            <Textarea disabled={viewOnly} placeholder="e.g. Lunch with team, electricity bill…" value={form.note ?? ""} onChange={(e) => setForm({ ...form, note: e.target.value })} rows={2} />
           </div>
         </div>
         <DialogFooter>

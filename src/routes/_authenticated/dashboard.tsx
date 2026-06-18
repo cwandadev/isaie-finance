@@ -152,9 +152,14 @@ function Dashboard() {
                   <span className="text-muted-foreground">Budget</span>
                   <span className="font-mono">{formatRwf(c.budget)}</span>
                 </div>
+                <div className="flex items-baseline justify-between text-xs mt-1">
+                  <span className="text-muted-foreground">Remaining</span>
+                  <span className={`font-mono ${c.remaining < 0 ? "text-destructive" : "text-emerald-500"}`}>{formatRwf(c.remaining)}</span>
+                </div>
                 <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: c.color }} />
                 </div>
+                <div className="mt-1 text-[10px] text-muted-foreground text-right">{pct.toFixed(0)}% of budget used</div>
               </Link>
             );
           })}

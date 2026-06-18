@@ -93,11 +93,11 @@ function SettingsPage() {
         <div className="grid sm:grid-cols-3 gap-3">
           <div className="space-y-2 sm:col-span-2">
             <Label>Fixed recurring monthly income (Rwf)</Label>
-            <Input type="number" value={monthly} onChange={(e)=>setMonthly(Number(e.target.value))} />
+            <Input type="number" placeholder="e.g. 200000" value={monthly} onChange={(e)=>setMonthly(Number(e.target.value))} />
           </div>
           <div className="space-y-2">
             <Label>Salary day (1–31)</Label>
-            <Input type="number" min={1} max={31} value={salaryDay} onChange={(e)=>setSalaryDay(Number(e.target.value))} />
+            <Input type="number" min={1} max={31} placeholder="e.g. 1" value={salaryDay} onChange={(e)=>setSalaryDay(Number(e.target.value))} />
           </div>
         </div>
         <Button onClick={saveIncome} className="metal-btn">Save income</Button>
@@ -114,8 +114,8 @@ function SettingsPage() {
         <div className="space-y-2">
           {cats?.map((c) => (
             <div key={c.id} className="grid grid-cols-12 gap-2 items-center">
-              <Input className="col-span-5" defaultValue={c.name} onBlur={(e)=>e.target.value !== c.name && updateCat(c.id,{ name: e.target.value })} />
-              <Input className="col-span-3" type="number" step="0.01" defaultValue={c.percentage}
+              <Input className="col-span-5" placeholder="Category name" defaultValue={c.name} onBlur={(e)=>e.target.value !== c.name && updateCat(c.id,{ name: e.target.value })} />
+              <Input className="col-span-3" type="number" step="0.01" placeholder="% e.g. 25" defaultValue={c.percentage}
                 onBlur={(e)=>Number(e.target.value) !== Number(c.percentage) && updateCat(c.id,{ percentage: Number(e.target.value) })} />
               <Input className="col-span-3" type="color" defaultValue={c.color}
                 onBlur={(e)=>e.target.value !== c.color && updateCat(c.id,{ color: e.target.value })} />
