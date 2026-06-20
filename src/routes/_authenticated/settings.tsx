@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, LogOut, ShieldAlert, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
+import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Isaie Finance" }] }),
@@ -15,6 +17,28 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const { theme, toggle } = useTheme();
+  const [email, setEmail] = useState<string | null>(null);
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null)); }, []);
+  const isSuperAdmin = email === "turikumanaisaie@gmail.com";
+
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ["pending-count"],
+    queryFn: async () => {
+      if (!isSuperAdmin) return 0;
+      const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true }).eq("status", "pending");
+      return count ?? 0;
+    },
+    enabled: isSuperAdmin,
+  });
+
+  const signOut = async () => {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   const { data: income } = useQuery({
     queryKey: ["income"],
@@ -88,6 +112,25 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Adjust income, categories and sources</p>
       </div>
 
+      {isSuperAdmin && (
+        <Link to="/users" className="gold-card gold-card-hover p-5 flex items-center justify-between group">
+          <div className="flex items-center gap-3">
+            <div className="size-11 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-md">
+              <ShieldAlert className="size-5" />
+            </div>
+            <div>
+              <div className="font-semibold">User management</div>
+              <div className="text-xs text-muted-foreground">Approve or reject signups</div>
+            </div>
+          </div>
+          {pendingCount > 0 && (
+            <span className="min-w-7 h-7 px-2 rounded-full bg-destructive text-destructive-foreground text-xs font-bold grid place-items-center">
+              {pendingCount}
+            </span>
+          )}
+        </Link>
+      )}
+
       <section className="gold-card gold-card-hover p-6 space-y-4">
         <h2 className="font-semibold">Monthly income</h2>
         <div className="grid sm:grid-cols-3 gap-3">
@@ -138,6 +181,17 @@ function SettingsPage() {
             </span>
           ))}
         </div>
+      </section>
+
+      {/* Mobile-only quick actions */}
+      <section className="gold-card p-4 space-y-2 md:hidden">
+        <Button variant="outline" onClick={toggle} className="w-full justify-start metal-btn">
+          {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          {theme === "dark" ? "Light mode" : "Dark mode"}
+        </Button>
+        <Button variant="ghost" onClick={signOut} className="w-full justify-start text-destructive">
+          <LogOut className="size-4" /> Sign out
+        </Button>
       </section>
     </div>
   );

@@ -50,6 +50,59 @@ export type Database = {
         }
         Relationships: []
       }
+      expected_income: {
+        Row: {
+          amount: number
+          created_at: string
+          expected_date: string
+          frequency: string | null
+          id: string
+          is_recurring: boolean
+          note: string | null
+          received: boolean
+          received_at: string | null
+          source_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          expected_date?: string
+          frequency?: string | null
+          id?: string
+          is_recurring?: boolean
+          note?: string | null
+          received?: boolean
+          received_at?: string | null
+          source_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          expected_date?: string
+          frequency?: string | null
+          id?: string
+          is_recurring?: boolean
+          note?: string | null
+          received?: boolean
+          received_at?: string | null
+          source_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expected_income_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_settings: {
         Row: {
           created_at: string
@@ -86,6 +139,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
         }
         Insert: {
@@ -93,6 +147,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Update: {
@@ -100,6 +155,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Relationships: []
@@ -209,9 +265,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
+      profile_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -340,6 +398,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      profile_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
