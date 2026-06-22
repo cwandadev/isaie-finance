@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { isoDate } from "@/lib/format";
+import { isoDate, formatRwf, monthRange } from "@/lib/format";
 
 export type TxRow = {
   id?: string;
@@ -32,6 +36,8 @@ export function TransactionForm({
     category_id: null, source_id: null, amount: 0, date: isoDate(new Date()), note: "",
   });
   const [saving, setSaving] = useState(false);
+  const [overspendOpen, setOverspendOpen] = useState(false);
+  const [overspendInfo, setOverspendInfo] = useState<{ overflow: number; allowed: number } | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -41,19 +47,19 @@ export function TransactionForm({
 
   const { data: cats } = useQuery({
     queryKey: ["categories"],
-    queryFn: async () => (await supabase.from("categories").select("id,name,color").order("sort_order")).data ?? [],
+    queryFn: async () => (await supabase.from("categories").select("id,name,color,percentage").order("sort_order")).data ?? [],
   });
   const { data: srcs } = useQuery({
     queryKey: ["sources"],
     queryFn: async () => (await supabase.from("sources").select("id,name").order("name")).data ?? [],
   });
 
-  const save = async () => {
-    if (!form.amount || !form.category_id) return toast.error("Amount and category are required");
+  const writeTx = async (extraSavingsOverflow = 0) => {
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
+    const uid = u.user!.id;
     const payload = {
-      user_id: u.user!.id,
+      user_id: uid,
       category_id: form.category_id,
       source_id: form.source_id,
       amount: form.amount,
@@ -63,11 +69,55 @@ export function TransactionForm({
     const res = initial?.id
       ? await supabase.from("transactions").update(payload).eq("id", initial.id)
       : await supabase.from("transactions").insert(payload);
+    if (res.error) { setSaving(false); return toast.error(res.error.message); }
+
+    if (extraSavingsOverflow > 0) {
+      const sav = cats?.find((c) => /saving/i.test(c.name));
+      if (sav) {
+        await supabase.from("transactions").insert({
+          user_id: uid, category_id: sav.id, source_id: form.source_id,
+          amount: extraSavingsOverflow, date: form.date,
+          note: `Auto: covered overspend on ${cats?.find(c=>c.id===form.category_id)?.name ?? "category"}`,
+        });
+      }
+    }
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
     toast.success(initial?.id ? "Transaction updated" : "Transaction added");
     qc.invalidateQueries();
     onOpenChange(false);
+  };
+
+  const save = async () => {
+    if (!form.amount || !form.category_id) return toast.error("Amount and category are required");
+    // Compute current spent for this category this month (skip for edits)
+    if (!initial?.id) {
+      const { start, end } = monthRange(1);
+      const { data: catData } = await supabase
+        .from("income_settings").select("monthly_income").maybeSingle();
+      const monthlyIncome = Number(catData?.monthly_income ?? 0);
+      const cat = cats?.find((c) => c.id === form.category_id);
+      if (cat && monthlyIncome > 0) {
+        const budget = (monthlyIncome * Number(cat.percentage ?? 0)) / 100;
+        const { data: spentRows } = await supabase
+          .from("transactions").select("amount")
+          .eq("category_id", cat.id)
+          .gte("date", isoDate(start)).lte("date", isoDate(end));
+        const spent = (spentRows ?? []).reduce((a, b) => a + Number(b.amount), 0);
+        const allowed = Math.max(0, budget - spent);
+        if (form.amount > allowed && !/saving/i.test(cat.name)) {
+          setOverspendInfo({ overflow: form.amount - allowed, allowed });
+          setOverspendOpen(true);
+          return;
+        }
+      }
+    }
+    await writeTx(0);
+  };
+
+  const confirmOverspend = async () => {
+    setOverspendOpen(false);
+    await writeTx(overspendInfo?.overflow ?? 0);
+    setOverspendInfo(null);
   };
 
   return (
@@ -124,6 +174,22 @@ export function TransactionForm({
           )}
         </DialogFooter>
       </DialogContent>
+      <AlertDialog open={overspendOpen} onOpenChange={setOverspendOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Use Savings to cover this?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have used all funds in this category. Only {formatRwf(overspendInfo?.allowed ?? 0)} is left in its budget,
+              and this transaction exceeds it by {formatRwf(overspendInfo?.overflow ?? 0)}.
+              Are you sure you want to use Savings to cover the overflow?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmOverspend}>Use Savings</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
