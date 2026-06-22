@@ -35,6 +35,16 @@ function Dashboard() {
         .lte("date", isoDate(end))
         .order("date", { ascending: false })).data ?? [],
   });
+  const { data: receivedExpected } = useQuery({
+    queryKey: ["expected", "received", isoDate(start), isoDate(end)],
+    queryFn: async () =>
+      (await supabase
+        .from("expected_income")
+        .select("amount,category_id,received_at")
+        .eq("received", true)
+        .gte("received_at", start.toISOString())
+        .lte("received_at", end.toISOString())).data ?? [],
+  });
   const { data: allSavingsTx } = useQuery({
     queryKey: ["savings-balance"],
     queryFn: async () => {
@@ -46,13 +56,22 @@ function Dashboard() {
     enabled: !!cats,
   });
 
-  const monthlyIncome = Number(income?.monthly_income ?? 200000);
+  const baseIncome = Number(income?.monthly_income ?? 0);
+  const salaryDay = Number(income?.salary_day ?? 29);
+  const period = salaryDay <= 7 ? "Weekly" : salaryDay >= 29 ? "Monthly" : "Custom";
+
+  const bonusTotal = (receivedExpected ?? []).reduce((a, b) => a + Number(b.amount), 0);
+  const totalIncome = baseIncome + bonusTotal;
   const totalSpent = (txs ?? []).reduce((a, b) => a + Number(b.amount), 0);
-  const remaining = monthlyIncome - totalSpent;
+  const remaining = totalIncome - totalSpent;
 
   const byCat = (cats ?? []).map((c) => {
     const spent = (txs ?? []).filter((t) => t.category_id === c.id).reduce((a, b) => a + Number(b.amount), 0);
-    const budget = (monthlyIncome * Number(c.percentage)) / 100;
+    const baseBudget = (baseIncome * Number(c.percentage)) / 100;
+    const catBonus = (receivedExpected ?? [])
+      .filter((r) => r.category_id === c.id)
+      .reduce((a, b) => a + Number(b.amount), 0);
+    const budget = baseBudget + catBonus;
     return { ...c, spent, budget, remaining: budget - spent };
   });
 
@@ -78,7 +97,7 @@ function Dashboard() {
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Total Salary" value={formatRwf(monthlyIncome)} icon={<Wallet className="size-5" />} accent="from-primary/30 to-primary/5" />
+        <StatCard label="Total Salary" badge={period} value={formatRwf(totalIncome)} icon={<Wallet className="size-5" />} accent="from-primary/30 to-primary/5" />
         <StatCard label="Total Spent" value={formatRwf(totalSpent)} icon={<TrendingDown className="size-5" />} accent="from-red-500/30 to-red-500/5" />
         <StatCard label="Remaining" value={formatRwf(remaining)} icon={<TrendingUp className="size-5" />} accent="from-emerald-500/30 to-emerald-500/5" />
         <StatCard label="Savings Balance" value={formatRwf(savingsBalance)} icon={<PiggyBank className="size-5" />} accent="from-amber-500/30 to-amber-500/5" />
@@ -171,13 +190,16 @@ function Dashboard() {
   );
 }
 
-function StatCard({ label, value, icon, accent }: { label: string; value: string; icon: React.ReactNode; accent: string }) {
+function StatCard({ label, value, icon, accent, badge }: { label: string; value: string; icon: React.ReactNode; accent: string; badge?: string }) {
   return (
     <div className="gold-card gold-card-hover p-5 relative overflow-hidden">
       <div className={`absolute inset-0 bg-gradient-to-br ${accent} pointer-events-none`} />
       <div className="relative">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">{label}</span>
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-2">
+            {label}
+            {badge && <span className="px-1.5 py-0.5 rounded-md bg-primary/15 text-primary text-[10px] font-bold normal-case tracking-normal">{badge}</span>}
+          </span>
           <span className="text-foreground/70">{icon}</span>
         </div>
         <div className="text-2xl font-bold tracking-tight font-mono">{value}</div>
