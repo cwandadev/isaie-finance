@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,8 +41,7 @@ function ExpectedPage() {
       .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(received ? "Marked received" : "Reverted");
-    qc.invalidateQueries({ queryKey: ["expected"] });
-    qc.invalidateQueries({ queryKey: ["expected-pending"] });
+    qc.invalidateQueries();
   };
 
   const remove = async (id: string) => {
@@ -147,10 +146,24 @@ function ExpectedForm({
   const qc = useQueryClient();
   const [amount, setAmount] = useState("");
   const [sourceId, setSourceId] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("");
   const [note, setNote] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState("monthly");
   const [expectedDate, setExpectedDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const { data: cats } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => (await supabase.from("categories").select("id,name,color").order("sort_order")).data ?? [],
+  });
+
+  // Default destination = Savings
+  useEffect(() => {
+    if (!categoryId && cats && cats.length) {
+      const sav = cats.find((c) => /saving/i.test(c.name));
+      setCategoryId(sav?.id ?? cats[0].id);
+    }
+  }, [cats, categoryId]);
 
   const submit = async () => {
     if (!amount || Number(amount) <= 0) return toast.error("Enter an amount");
@@ -159,6 +172,7 @@ function ExpectedForm({
       user_id: u.user!.id,
       amount: Number(amount),
       source_id: sourceId || null,
+      category_id: categoryId || null,
       note: note || null,
       is_recurring: isRecurring,
       frequency: isRecurring ? frequency : null,
@@ -168,8 +182,7 @@ function ExpectedForm({
     toast.success("Logged");
     setAmount(""); setNote(""); setIsRecurring(false);
     onOpenChange(false);
-    qc.invalidateQueries({ queryKey: ["expected"] });
-    qc.invalidateQueries({ queryKey: ["expected-pending"] });
+    qc.invalidateQueries();
   };
 
   return (
@@ -189,6 +202,23 @@ function ExpectedForm({
                 {sources.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Destination category (defaults to Savings)</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectContent>
+                {(cats ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="size-2.5 rounded-full" style={{ background: c.color }} />
+                      {c.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">When marked received, this category's budget increases by this amount.</p>
           </div>
           <div className="space-y-1.5">
             <Label>Expected date</Label>

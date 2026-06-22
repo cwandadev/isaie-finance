@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Trash2, LogOut, ShieldAlert, Moon, Sun } from "lucide-react";
+import { Plus, Trash2, LogOut, ShieldAlert, Moon, Sun, Lock, User as UserIcon } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -20,8 +20,46 @@ function SettingsPage() {
   const navigate = useNavigate();
   const { theme, toggle } = useTheme();
   const [email, setEmail] = useState<string | null>(null);
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null)); }, []);
-  const isSuperAdmin = email === "turikumanaisaie@gmail.com";
+  const [uid, setUid] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+      setUid(data.user?.id ?? null);
+    });
+  }, []);
+  const isSuperAdmin = email === "turikumanaisaie@gmail.com" || email === "tieflab@gmail.com";
+
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile", uid],
+    enabled: !!uid,
+    queryFn: async () =>
+      (await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle()).data,
+  });
+
+  const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name ?? "");
+      setUsername(profile.username ?? "");
+      setAvatarUrl(profile.avatar_url ?? "");
+    }
+  }, [profile]);
+
+  const saveProfile = async () => {
+    if (!uid) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: displayName || null, username: username || null, avatar_url: avatarUrl || null })
+      .eq("id", uid);
+    if (error) return toast.error(error.message);
+    toast.success("Profile updated");
+    qc.invalidateQueries({ queryKey: ["my-profile"] });
+  };
+
+  const initials = (displayName || email || "?")
+    .split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 
   const { data: pendingCount = 0 } = useQuery({
     queryKey: ["pending-count"],
@@ -53,16 +91,23 @@ function SettingsPage() {
     queryFn: async () => (await supabase.from("sources").select("*").order("name")).data ?? [],
   });
 
-  const [monthly, setMonthly] = useState(0);
-  const [salaryDay, setSalaryDay] = useState(1);
+  const [monthly, setMonthly] = useState<string>("");
+  const [salaryDay, setSalaryDay] = useState<string>("29");
   useEffect(() => {
-    if (income) { setMonthly(Number(income.monthly_income)); setSalaryDay(income.salary_day ?? 1); }
+    if (income) {
+      setMonthly(income.monthly_income != null ? String(income.monthly_income) : "");
+      setSalaryDay(income.salary_day != null ? String(income.salary_day) : "29");
+    }
   }, [income]);
 
   const saveIncome = async () => {
     if (!income) return;
+    const m = Number(monthly);
+    const d = Number(salaryDay);
+    if (!m || m <= 0) return toast.error("Enter your monthly income");
+    if (!d || d < 1 || d > 31) return toast.error("Salary day must be 1–31");
     const { error } = await supabase.from("income_settings").update({
-      monthly_income: monthly, salary_day: salaryDay,
+      monthly_income: m, salary_day: d,
     }).eq("id", income.id);
     if (error) return toast.error(error.message);
     toast.success("Income updated");
@@ -84,7 +129,8 @@ function SettingsPage() {
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["categories"] });
   };
-  const delCat = async (id: string) => {
+  const delCat = async (id: string, isProtected: boolean) => {
+    if (isProtected) return toast.error("This category is protected and cannot be deleted");
     const { error } = await supabase.from("categories").delete().eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["categories"] });
@@ -112,6 +158,39 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Adjust income, categories and sources</p>
       </div>
 
+      {/* Profile */}
+      <section className="gold-card gold-card-hover p-6 space-y-4">
+        <h2 className="font-semibold flex items-center gap-2"><UserIcon className="size-4" /> Profile</h2>
+        <div className="flex items-center gap-4">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="" className="size-16 rounded-full object-cover border border-border" />
+          ) : (
+            <div className="size-16 rounded-full grid place-items-center bg-primary text-primary-foreground text-xl font-bold shadow-md">
+              {initials}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="font-semibold truncate">{displayName || "—"}</div>
+            <div className="text-xs text-muted-foreground truncate">{email}</div>
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Display name</Label>
+            <Input placeholder="e.g. Isaie Turikumana" value={displayName} onChange={(e)=>setDisplayName(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Username</Label>
+            <Input placeholder="e.g. isaie" value={username} onChange={(e)=>setUsername(e.target.value)} />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Avatar URL (optional)</Label>
+            <Input placeholder="https://…" value={avatarUrl} onChange={(e)=>setAvatarUrl(e.target.value)} />
+          </div>
+        </div>
+        <Button onClick={saveProfile} className="metal-btn">Save profile</Button>
+      </section>
+
       {isSuperAdmin && (
         <Link to="/users" className="gold-card gold-card-hover p-5 flex items-center justify-between group">
           <div className="flex items-center gap-3">
@@ -133,14 +212,16 @@ function SettingsPage() {
 
       <section className="gold-card gold-card-hover p-6 space-y-4">
         <h2 className="font-semibold">Monthly income</h2>
-        <div className="grid sm:grid-cols-3 gap-3">
-          <div className="space-y-2 sm:col-span-2">
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="space-y-2 flex-1 min-w-[200px]">
             <Label>Fixed recurring monthly income (Rwf)</Label>
-            <Input type="number" placeholder="e.g. 200000" value={monthly} onChange={(e)=>setMonthly(Number(e.target.value))} />
+            <Input type="number" inputMode="numeric" placeholder="e.g. 200000" value={monthly}
+              onChange={(e)=>setMonthly(e.target.value)} />
           </div>
-          <div className="space-y-2">
-            <Label>Salary day (1–31)</Label>
-            <Input type="number" min={1} max={31} placeholder="e.g. 1" value={salaryDay} onChange={(e)=>setSalaryDay(Number(e.target.value))} />
+          <div className="space-y-2 w-24">
+            <Label>Salary day</Label>
+            <Input type="number" min={1} max={31} placeholder="29" className="text-center" value={salaryDay}
+              onChange={(e)=>setSalaryDay(e.target.value)} />
           </div>
         </div>
         <Button onClick={saveIncome} className="metal-btn">Save income</Button>
@@ -157,15 +238,21 @@ function SettingsPage() {
         <div className="space-y-2">
           {cats?.map((c) => (
             <div key={c.id} className="grid grid-cols-12 gap-2 items-center">
-              <Input className="col-span-5" placeholder="Category name" defaultValue={c.name} onBlur={(e)=>e.target.value !== c.name && updateCat(c.id,{ name: e.target.value })} />
+              <div className="col-span-5 flex items-center gap-1">
+                {c.is_protected && <Lock className="size-3.5 text-muted-foreground shrink-0" />}
+                <Input placeholder="Category name" defaultValue={c.name} onBlur={(e)=>e.target.value !== c.name && updateCat(c.id,{ name: e.target.value })} />
+              </div>
               <Input className="col-span-3" type="number" step="0.01" placeholder="% e.g. 25" defaultValue={c.percentage}
                 onBlur={(e)=>Number(e.target.value) !== Number(c.percentage) && updateCat(c.id,{ percentage: Number(e.target.value) })} />
               <Input className="col-span-3" type="color" defaultValue={c.color}
                 onBlur={(e)=>e.target.value !== c.color && updateCat(c.id,{ color: e.target.value })} />
-              <Button variant="ghost" size="icon" onClick={()=>delCat(c.id)}><Trash2 className="size-4 text-destructive" /></Button>
+              <Button variant="ghost" size="icon" disabled={c.is_protected} onClick={()=>delCat(c.id, c.is_protected)}>
+                <Trash2 className={`size-4 ${c.is_protected ? "text-muted-foreground/40" : "text-destructive"}`} />
+              </Button>
             </div>
           ))}
         </div>
+        <p className="text-[11px] text-muted-foreground">Protected categories (e.g. Savings) cannot be deleted but their percentage is still editable.</p>
       </section>
 
       <section className="gold-card gold-card-hover p-6 space-y-4">
