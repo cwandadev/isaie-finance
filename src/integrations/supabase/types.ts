@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           icon: string
           id: string
+          is_protected: boolean
           name: string
           percentage: number
           sort_order: number
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           icon?: string
           id?: string
+          is_protected?: boolean
           name: string
           percentage?: number
           sort_order?: number
@@ -42,6 +44,7 @@ export type Database = {
           created_at?: string
           icon?: string
           id?: string
+          is_protected?: boolean
           name?: string
           percentage?: number
           sort_order?: number
@@ -53,6 +56,7 @@ export type Database = {
       expected_income: {
         Row: {
           amount: number
+          category_id: string | null
           created_at: string
           expected_date: string
           frequency: string | null
@@ -67,6 +71,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          category_id?: string | null
           created_at?: string
           expected_date?: string
           frequency?: string | null
@@ -81,6 +86,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          category_id?: string | null
           created_at?: string
           expected_date?: string
           frequency?: string | null
@@ -94,6 +100,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "expected_income_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "expected_income_source_id_fkey"
             columns: ["source_id"]
@@ -135,28 +148,34 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           display_name: string | null
           email: string | null
           id: string
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id: string
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
+          username?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
