@@ -3,13 +3,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, ShieldAlert } from "lucide-react";
+import { Check, X, ShieldAlert, KeyRound } from "lucide-react";
+
+const SUPER_ADMINS = ["turikumanaisaie@gmail.com", "tieflab@gmail.com"];
 
 export const Route = createFileRoute("/_authenticated/users")({
   head: () => ({ meta: [{ title: "User management — Isaie Finance" }] }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getUser();
-    if (data.user?.email !== "turikumanaisaie@gmail.com") {
+    if (!data.user?.email || !SUPER_ADMINS.includes(data.user.email)) {
       throw redirect({ to: "/dashboard" });
     }
   },
@@ -30,6 +32,15 @@ function UsersPage() {
     toast.success(`User ${status}`);
     qc.invalidateQueries({ queryKey: ["profiles-all"] });
     qc.invalidateQueries({ queryKey: ["pending-count"] });
+  };
+
+  const resetPassword = async (email: string | null) => {
+    if (!email) return;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    if (error) return toast.error(error.message);
+    toast.success(`Password reset email sent to ${email}`);
   };
 
   const pending = (users ?? []).filter((u) => u.status === "pending");
@@ -103,6 +114,11 @@ function UsersPage() {
                 {u.status === "approved" && u.email !== "turikumanaisaie@gmail.com" && (
                   <Button size="sm" variant="ghost" onClick={() => setStatus(u.id, "rejected")}>
                     <X className="size-4" /> Block
+                  </Button>
+                )}
+                {!SUPER_ADMINS.includes(u.email ?? "") && (
+                  <Button size="sm" variant="outline" onClick={() => resetPassword(u.email)}>
+                    <KeyRound className="size-4" /> Reset password
                   </Button>
                 )}
               </div>
